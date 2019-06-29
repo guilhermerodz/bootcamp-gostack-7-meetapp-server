@@ -6,9 +6,11 @@ class Meetup extends Model {
     super.init(
       {
         title: Sequelize.STRING,
-        description: Sequelize.DESCRIPTION,
+        description: Sequelize.STRING,
         location: Sequelize.STRING,
         date: Sequelize.DATE,
+        owner_id: Sequelize.INTEGER,
+        banner_id: Sequelize.INTEGER,
         canceled_at: Sequelize.DATE,
         past: {
           type: Sequelize.VIRTUAL,
@@ -27,6 +29,8 @@ class Meetup extends Model {
         sequelize
       }
     );
+
+    return this;
   }
 
   static associate(models) {
