@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { startOfHour, addHours, parseISO } from 'date-fns';
+import { startOfHour, addHours } from 'date-fns';
 
 import Meetup from '../models/Meetup';
 import User from '../models/User';
