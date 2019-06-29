@@ -67,11 +67,34 @@ class SubscribedController {
         conflict: conflictMeetups
       });
 
-    const subscribers = await meetup.update({
+    const { subscribers } = await meetup.update({
       subscribers: [req.userId, ...meetup.subscribers]
     });
 
     return res.json(subscribers);
+  }
+
+  async delete(req, res) {
+    const meetup = await Meetup.findOne({ where: { id: req.params.id } });
+
+    if (!meetup)
+      return res.status(400).json({ error: 'Meetup does not exists' });
+
+    if (meetup.past)
+      return res.status(400).json({ error: 'Meetup is already finished' });
+
+    if (!meetup.subscribers.includes(req.userId))
+      return res.status(400).json({ error: 'You are not subscribed' });
+
+    const removeFromSubs = subs => {
+      subs.splice(subs.indexOf(req.userId), 1);
+      return subs;
+    };
+    const subscribers = removeFromSubs(meetup.subscribers);
+
+    await meetup.update({ subscribers });
+
+    return res.send();
   }
 }
 
