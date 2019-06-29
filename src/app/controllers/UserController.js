@@ -59,14 +59,14 @@ class UserController {
         return res.status(400).json({ error: 'E-mail already being used' });
     }
 
-    // Prevents using banner image as profile picture
+    // Prevents using another file type as profile picture
     if (avatar_id) {
       const image = await File.findByPk(avatar_id);
       if (!image) return res.status(400).json({ error: 'Image not found' });
       if (image.type !== 0)
         return res
           .status(400)
-          .json({ error: "Your picture can't be a banner" });
+          .json({ error: 'Your picture must be a profile picture' });
     }
 
     if (oldPassword && !(await user.checkPassword(oldPassword)))
@@ -77,7 +77,8 @@ class UserController {
     return res.json({
       id,
       name,
-      email
+      email,
+      avatar_id
     });
   }
 }

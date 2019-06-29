@@ -12,6 +12,15 @@ class Meetup extends Model {
         owner_id: Sequelize.INTEGER,
         banner_id: Sequelize.INTEGER,
         canceled_at: Sequelize.DATE,
+        subscribers: {
+          type: Sequelize.STRING,
+          get() {
+            return this.getDataValue('subscribers').split(';');
+          },
+          set(subs) {
+            this.setDataValue('subscribers', subs.join(';'));
+          }
+        },
         past: {
           type: Sequelize.VIRTUAL,
           get() {
