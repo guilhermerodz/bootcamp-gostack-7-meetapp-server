@@ -19,13 +19,12 @@ class UserController {
     if (userExists)
       return res.status(400).json({ error: 'E-mail already registered' });
 
-    const { id, name, email, provider } = await User.create(req.body);
+    const { id, name, email } = await User.create(req.body);
 
     return res.json({
       id,
       name,
-      email,
-      provider
+      email
     });
   }
 
@@ -62,13 +61,12 @@ class UserController {
     if (oldPassword && !(await user.checkPassword(oldPassword)))
       return res.status(401).json({ error: 'Password does not match' });
 
-    const { id, name, provider } = await user.update(req.body);
+    const { id, name } = await user.update(req.body);
 
     return res.json({
       id,
       name,
-      email,
-      provider
+      email
     });
   }
 }
