@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
 import User from '../models/User';
+import File from '../models/File';
 
 class UserController {
   async store(req, res) {
@@ -19,13 +20,12 @@ class UserController {
     if (userExists)
       return res.status(400).json({ error: 'E-mail already registered' });
 
-    const { id, name, email, provider } = await User.create(req.body);
+    const { id, name, email } = await User.create(req.body);
 
     return res.json({
       id,
       name,
-      email,
-      provider
+      email
     });
   }
 
@@ -47,7 +47,7 @@ class UserController {
     if (!(await schema.isValid(req.body)))
       return res.status(400).json({ error: 'Validation failed' });
 
-    const { email, oldPassword } = req.body;
+    const { email, oldPassword, avatar_id } = req.body;
 
     const user = await User.findByPk(req.userId);
 
@@ -59,16 +59,25 @@ class UserController {
         return res.status(400).json({ error: 'E-mail already being used' });
     }
 
+    // Prevents using banner image as profile picture
+    if (avatar_id) {
+      const image = await File.findByPk(avatar_id);
+      if (!image) return res.status(400).json({ error: 'Image not found' });
+      if (image.type !== 0)
+        return res
+          .status(400)
+          .json({ error: "Your picture can't be a banner" });
+    }
+
     if (oldPassword && !(await user.checkPassword(oldPassword)))
       return res.status(401).json({ error: 'Password does not match' });
 
-    const { id, name, provider } = await user.update(req.body);
+    const { id, name } = await user.update(req.body);
 
     return res.json({
       id,
       name,
-      email,
-      provider
+      email
     });
   }
 }
