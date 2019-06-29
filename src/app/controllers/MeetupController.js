@@ -28,7 +28,6 @@ class MeetupController {
     if (!(await schema.isValid(req.body)))
       return res.status(400).json({ error: 'Validation failed' });
 
-    const owner_id = req.userId;
     const { title, description, location, date } = req.body;
 
     /**
@@ -42,7 +41,7 @@ class MeetupController {
       description,
       location,
       date,
-      owner_id
+      owner_id: req.userId
     });
 
     return res.json(meetup);
@@ -55,7 +54,7 @@ class MeetupController {
       location: Yup.string().max(100),
       date: Yup.date(),
       banner_id: Yup.number(),
-      subscribers: Yup.string()
+      subscribers: Yup.array(Yup.number())
     });
 
     if (!(await schema.isValid(req.body)))
@@ -74,17 +73,12 @@ class MeetupController {
         .status(400)
         .json({ error: "You're not the owner of this meetup" });
 
-    const {
-      title,
-      description,
-      location,
-      date,
-      banner_id,
-      subscribers
-    } = req.body;
+    const { date, banner_id } = req.body;
 
-    // Prevents using another file type as profile picture
-    if (banner_id) {
+    /**
+     * Prevents using another file type as profile picture
+     */
+    if (banner_id && banner_id !== meetup.banner_id) {
       const image = await File.findByPk(banner_id);
       if (!image) return res.status(400).json({ error: 'Image not found' });
       if (image.type !== 1)
@@ -97,7 +91,13 @@ class MeetupController {
     if (date && isBefore(parseISO(date), new Date()))
       return res.status(400).json({ error: 'Past dates are not allowed' });
 
-    const { id } = await meetup.update(req.body);
+    const {
+      id,
+      title,
+      description,
+      location,
+      subscribers
+    } = await meetup.update(req.body);
 
     return res.json({
       id,
@@ -105,7 +105,8 @@ class MeetupController {
       description,
       location,
       date,
-      banner_id
+      banner_id,
+      subscribers
     });
   }
 
