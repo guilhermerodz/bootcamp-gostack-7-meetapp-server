@@ -12,15 +12,7 @@ class Meetup extends Model {
         owner_id: Sequelize.INTEGER,
         banner_id: Sequelize.INTEGER,
         canceled_at: Sequelize.DATE,
-        subscribers: {
-          type: Sequelize.STRING,
-          get() {
-            return this.getDataValue('subscribers').split(';');
-          },
-          set(subs) {
-            this.setDataValue('subscribers', subs.join(';'));
-          }
-        },
+        subscribers: Sequelize.ARRAY(Sequelize.INTEGER),
         past: {
           type: Sequelize.VIRTUAL,
           get() {
@@ -43,6 +35,7 @@ class Meetup extends Model {
   }
 
   static associate(models) {
+    this.belongsTo(models.User, { foreignKey: 'owner_id', as: 'owner' });
     this.belongsTo(models.File, { foreignKey: 'banner_id', as: 'banner' });
   }
 }

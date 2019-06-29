@@ -54,15 +54,14 @@ class MeetupController {
       description: Yup.string().max(650),
       location: Yup.string().max(100),
       date: Yup.date(),
-      banner_id: Yup.number()
+      banner_id: Yup.number(),
+      subscribers: Yup.string()
     });
 
     if (!(await schema.isValid(req.body)))
       return res.status(400).json({ error: 'Validation failed' });
 
-    const meetup = await Meetup.findOne({
-      where: { id: req.params.id }
-    });
+    const meetup = await Meetup.findOne({ where: { id: req.params.id } });
 
     if (!meetup)
       return res.status(400).json({ error: 'Meetup does not exists' });
@@ -75,7 +74,14 @@ class MeetupController {
         .status(400)
         .json({ error: "You're not the owner of this meetup" });
 
-    const { title, description, location, date, banner_id } = req.body;
+    const {
+      title,
+      description,
+      location,
+      date,
+      banner_id,
+      subscribers
+    } = req.body;
 
     // Prevents using another file type as profile picture
     if (banner_id) {

@@ -1,8 +1,9 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.addColumn('meetups', 'subscribers', {
-      type: Sequelize.INTEGER,
-      allowNull: true
+      type: Sequelize.ARRAY(Sequelize.INTEGER),
+      allowNull: false,
+      defaultValue: []
     });
   },
 
