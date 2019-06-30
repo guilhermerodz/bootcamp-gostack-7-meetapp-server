@@ -8,7 +8,11 @@ import File from '../models/File';
 class SubscribedController {
   async index(req, res) {
     const meetups = await Meetup.findAll({
-      where: { subscribers: { [Op.contains]: [req.userId] } },
+      where: {
+        subscribers: { [Op.contains]: [req.userId] }
+      },
+      attributes: ['id', 'title', 'description', 'location', 'date'],
+      order: ['date'],
       include: [
         {
           model: User,
@@ -21,15 +25,29 @@ class SubscribedController {
               attributes: ['id', 'path', 'url']
             }
           ]
+        },
+        {
+          model: File,
+          as: 'banner',
+          attributes: ['id', 'path', 'url']
         }
       ]
     });
 
-    return res.json(meetups);
+    return res.json(meetups.filter(m => !m.past));
   }
 
   async store(req, res) {
-    const meetup = await Meetup.findOne({ where: { id: req.params.id } });
+    const meetup = await Meetup.findOne({
+      where: { id: req.params.id },
+      include: [
+        {
+          model: File,
+          as: 'banner',
+          attributes: ['id', 'path', 'url']
+        }
+      ]
+    });
 
     if (!meetup)
       return res.status(400).json({ error: 'Meetup does not exists' });
@@ -67,11 +85,17 @@ class SubscribedController {
         conflict: conflictMeetups
       });
 
-    const { subscribers } = await meetup.update({
+    const { title, description, location, date, banner } = await meetup.update({
       subscribers: [req.userId, ...meetup.subscribers]
     });
 
-    return res.json(subscribers);
+    return res.json({
+      title,
+      description,
+      location,
+      date,
+      banner
+    });
   }
 
   async delete(req, res) {
