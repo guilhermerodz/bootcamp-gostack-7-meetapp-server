@@ -20,7 +20,7 @@ class AvailableController {
     /**
      * Pagination
      */
-    const perPage = 20;
+    const perPage = 10;
 
     const { date, page = 1 } = req.query;
     const parsedDate = parseISO(date);
