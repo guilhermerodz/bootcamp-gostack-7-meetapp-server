@@ -10,7 +10,7 @@ import File from '../models/File';
 class AvailableController {
   async index(req, res) {
     const schema = Yup.object().shape({
-      date: Yup.date().required(),
+      date: Yup.date(),
       page: Yup.number()
     });
 
@@ -23,7 +23,7 @@ class AvailableController {
     const perPage = 10;
 
     const { date, page = 1 } = req.query;
-    const parsedDate = parseISO(date);
+    const parsedDate = date ? parseISO(date) : new Date(); // Default is today
 
     const meetups = await Meetup.findAll({
       where: {
