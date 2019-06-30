@@ -1,6 +1,8 @@
 import { Op } from 'sequelize';
 import { startOfHour, addHours } from 'date-fns';
 
+import Mail from '../../lib/Mail';
+
 import Meetup from '../models/Meetup';
 import User from '../models/User';
 import File from '../models/File';
@@ -45,6 +47,11 @@ class SubscribedController {
           model: File,
           as: 'banner',
           attributes: ['id', 'path', 'url']
+        },
+        {
+          model: User,
+          as: 'owner',
+          attributes: ['id', 'name', 'email']
         }
       ]
     });
@@ -87,6 +94,12 @@ class SubscribedController {
 
     const { title, description, location, date, banner } = await meetup.update({
       subscribers: [req.userId, ...meetup.subscribers]
+    });
+
+    await Mail.sendMail({
+      to: `${meetup.owner.name} <${meetup.owner.email}>`,
+      subject: `Nova inscrição no seu Meetup ${meetup.title}`,
+      text: `ID do usuário inscrito: ${req.userId}`
     });
 
     return res.json({
