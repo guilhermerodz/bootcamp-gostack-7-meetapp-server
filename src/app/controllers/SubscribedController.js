@@ -1,5 +1,6 @@
 import { Op } from 'sequelize';
-import { startOfHour, addHours } from 'date-fns';
+import { startOfHour, addHours, format } from 'date-fns';
+import pt from 'date-fns/locale/pt';
 
 import Mail from '../../lib/Mail';
 
@@ -96,10 +97,35 @@ class SubscribedController {
       subscribers: [req.userId, ...meetup.subscribers]
     });
 
+    const { avatar, name: subName, email: subEmail } = await User.findOne({
+      where: { id: req.userId },
+      include: [
+        {
+          model: File,
+          as: 'avatar',
+          attributes: ['id', 'path', 'url']
+        }
+      ]
+    });
+
+    const formatDate = d =>
+      format(d, "'dia' dd 'de' MMMM 'de' yyyy', às' H:mm'h'", { locale: pt });
+
     await Mail.sendMail({
       to: `${meetup.owner.name} <${meetup.owner.email}>`,
-      subject: `Nova inscrição no seu Meetup ${meetup.title}`,
-      text: `ID do usuário inscrito: ${req.userId}`
+      subject: `Nova inscrição no seu Meetup - ${meetup.title}`,
+      template: 'new-subscriber',
+      context: {
+        ownerName: meetup.owner.name,
+        bannerURL: banner ? banner.url : null,
+        meetupTitle: title,
+        meetupDate: formatDate(meetup.date),
+        subAvatar: avatar ? avatar.url : null,
+        subName,
+        subEmail,
+        subDate: formatDate(new Date()),
+        subCount: meetup.subscribers.length
+      }
     });
 
     return res.json({
