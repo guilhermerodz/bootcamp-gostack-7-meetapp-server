@@ -14,8 +14,11 @@ class AvailableController {
       page: Yup.number()
     });
 
-    if (!(await schema.isValid(req.query)))
-      return res.status(400).json({ error: 'Validation failed' });
+    try {
+      await schema.validate(req.query);
+    } catch (err) {
+      return res.status(400).json({ error: err.errors });
+    }
 
     /**
      * Pagination

@@ -4,17 +4,16 @@ import File from '../models/File';
 
 class FileController {
   async store(req, res) {
-    const schema = Yup.object().shape({
-      type: Yup.number()
-        .required()
-        .lessThan(2)
-        .moreThan(-1)
-    });
+    const { type } = req.body;
 
-    if (!(await schema.isValid(req.body)))
-      return res.status(400).json({ error: 'Validation fails' });
+    switch (type) {
+      case 'avatar':
+      case 'banner':
+        break;
+      default:
+        return res.status(400).json({ error: 'Invalid file type' });
+    }
 
-    const type = Number(req.body.type); // 0=avatar, 1=banner, 2
     const { originalname: name, filename: path } = req.file;
 
     const file = await File.create({

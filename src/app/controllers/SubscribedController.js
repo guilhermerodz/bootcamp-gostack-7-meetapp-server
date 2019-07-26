@@ -40,6 +40,51 @@ class SubscribedController {
     return res.json(meetups.filter(m => !m.past));
   }
 
+  async show(req, res) {
+    const { id } = req.params;
+
+    const { subscribers } = await Meetup.findByPk(id, {
+      include: [
+        {
+          model: File,
+          as: 'banner',
+          attributes: ['id', 'path', 'url']
+        }
+      ],
+      attributes: ['subscribers']
+    });
+
+    if (!subscribers)
+      return res.status(400).json({ error: 'Meetup does not exists' });
+
+    /**
+     * Pagination
+     */
+    const perPage = 10;
+    const { page = 1 } = req.query;
+
+    const offset = (page - 1) * perPage;
+    const [from, to] = [offset, offset + perPage];
+
+    const allSubscribers = await User.findAll({
+      where: {
+        [Op.or]: subscribers.slice(from, to).map(user_id => ({
+          id: user_id
+        }))
+      },
+      attributes: ['id', 'name'],
+      include: [
+        {
+          model: File,
+          as: 'avatar',
+          attributes: ['id', 'path', 'url']
+        }
+      ]
+    });
+
+    return res.json({ subscribers: allSubscribers });
+  }
+
   async store(req, res) {
     const meetup = await Meetup.findOne({
       where: { id: req.params.id },
@@ -141,13 +186,15 @@ class SubscribedController {
     const meetup = await Meetup.findOne({ where: { id: req.params.id } });
 
     if (!meetup)
-      return res.status(400).json({ error: 'Meetup does not exists' });
+      return res.status(400).json({ error: 'This meetup does not exists!' });
 
     if (meetup.past)
-      return res.status(400).json({ error: 'Meetup is already finished' });
+      return res
+        .status(400)
+        .json({ error: 'You can not unsubscribe a finished meetup!' });
 
     if (!meetup.subscribers.includes(req.userId))
-      return res.status(400).json({ error: 'You are not subscribed' });
+      return res.status(400).json({ error: 'You are not subscribed!' });
 
     const removeFromSubs = subs => {
       subs.splice(subs.indexOf(req.userId), 1);
