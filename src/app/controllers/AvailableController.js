@@ -21,21 +21,43 @@ class AvailableController {
     }
 
     /**
+     * Set a default date
+     */
+    const { date } = req.query;
+    const { to: toDate } = req.query;
+    const parsedDate = date ? parseISO(date) : new Date(); // Default is today
+
+    let dateFilter;
+
+    if (toDate === 'all')
+      dateFilter = {
+        [Op.gt]: parsedDate
+      };
+    else
+      dateFilter = {
+        [Op.between]: [
+          startOfDay(parsedDate),
+          endOfDay(toDate ? parseISO(toDate) : parsedDate)
+        ]
+      };
+
+    /**
+     * Order
+     */
+    const { ordering = 'ASC' } = req.query;
+
+    /**
      * Pagination
      */
     const perPage = 10;
-
-    const { date, page = 1 } = req.query;
-    const parsedDate = date ? parseISO(date) : new Date(); // Default is today
+    const { page = 1 } = req.query;
 
     const meetups = await Meetup.findAll({
       where: {
         canceled_at: null,
-        date: {
-          [Op.between]: [startOfDay(parsedDate), endOfDay(parsedDate)]
-        }
+        date: dateFilter
       },
-      order: ['date'],
+      order: [['date', ordering]],
       attributes: ['id', 'title', 'description', 'location', 'date'],
       limit: perPage,
       offset: (page - 1) * perPage,
