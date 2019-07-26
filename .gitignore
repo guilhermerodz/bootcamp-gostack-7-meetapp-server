@@ -5,3 +5,4 @@ node_modules/
 tmp/uploads/*
 
 !tmp/uploads/.gitkeep
+!tmp/uploads/default
