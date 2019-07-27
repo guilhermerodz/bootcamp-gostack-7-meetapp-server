@@ -1,10 +1,11 @@
 import { Op } from 'sequelize';
-import * as Yup from 'yup';
 import { isBefore, parseISO } from 'date-fns';
 
 import Meetup from '../models/Meetup';
 import User from '../models/User';
 import File from '../models/File';
+
+import { storeSchema, updateSchema } from '../validations/Meetup';
 
 class MeetupController {
   async index(req, res) {
@@ -70,22 +71,8 @@ class MeetupController {
   }
 
   async store(req, res) {
-    const schema = Yup.object().shape({
-      title: Yup.string()
-        .required('Title can not be empty!')
-        .max(55, 'Title can not exceed 55 characters.'),
-      description: Yup.string()
-        .required('Description can not be empty!')
-        .max(650, 'Description must have a maximum of 650 characters.'),
-      location: Yup.string()
-        .required('Location can not be empty!')
-        .max(150, 'Location can not exceed 150 characters!'),
-      date: Yup.date('Invalid date!').required('Date can not be empty.'),
-      banner_id: Yup.number().required('You must set a banner for the meetup!')
-    });
-
     try {
-      await schema.validate(req.body);
+      await storeSchema.validate(req.body);
     } catch (err) {
       return res.status(400).json({ error: err.errors });
     }
@@ -121,23 +108,8 @@ class MeetupController {
   }
 
   async update(req, res) {
-    const schema = Yup.object().shape({
-      title: Yup.string().max(55, 'Title can not exceed 55 characters.'),
-      description: Yup.string().max(
-        650,
-        'Description must have a maximum of 650 characters.'
-      ),
-      location: Yup.string().max(
-        150,
-        'Location can not exceed 150 characters!'
-      ),
-      date: Yup.date(),
-      banner_id: Yup.number(),
-      subscribers: Yup.array(Yup.number('Subscribers must be an array of IDs!'))
-    });
-
     try {
-      await schema.validate(req.body);
+      await updateSchema.validate(req.body);
     } catch (err) {
       return res.status(400).json({ error: err.errors });
     }
