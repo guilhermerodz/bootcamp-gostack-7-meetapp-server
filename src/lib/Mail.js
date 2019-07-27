@@ -40,6 +40,7 @@ class Mail {
   }
 
   sendMail(message) {
+    console.log('Enviando e-mail!');
     return this.transporter.sendMail({
       ...mailConfig.default,
       ...message

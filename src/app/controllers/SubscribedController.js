@@ -8,6 +8,9 @@ import Meetup from '../models/Meetup';
 import User from '../models/User';
 import File from '../models/File';
 
+import SubscriptionMail from '../jobs/SubscriptionMail';
+import Queue from '../../lib/Queue';
+
 class SubscribedController {
   async index(req, res) {
     const meetups = await Meetup.findAll({
@@ -108,10 +111,10 @@ class SubscribedController {
     if (meetup.past)
       return res.status(400).json({ error: 'Meetup is already finished' });
 
-    if (req.userId === meetup.owner_id)
-      return res
-        .status(400)
-        .json({ error: "The meetup owner can't subscribe" });
+    // if (req.userId === meetup.owner_id)
+    //   return res
+    //     .status(400)
+    //     .json({ error: "The meetup owner can't subscribe" });
 
     if (meetup.subscribers.includes(req.userId))
       return res.status(400).json({ error: 'Already subscribed' });
@@ -153,24 +156,13 @@ class SubscribedController {
       ]
     });
 
-    const formatDate = d =>
-      format(d, "'dia' dd 'de' MMMM 'de' yyyy', às' H:mm'h'", { locale: pt });
-
-    await Mail.sendMail({
-      to: `${meetup.owner.name} <${meetup.owner.email}>`,
-      subject: `Nova inscrição no seu Meetup - ${meetup.title}`,
-      template: 'new-subscriber',
-      context: {
-        ownerName: meetup.owner.name,
-        bannerURL: banner ? banner.url : null,
-        meetupTitle: title,
-        meetupDate: formatDate(meetup.date),
-        subAvatar: avatar ? avatar.url : null,
-        subName,
-        subEmail,
-        subDate: formatDate(new Date()),
-        subCount: meetup.subscribers.length
-      }
+    await Queue.add(SubscriptionMail.key, {
+      meetup,
+      banner,
+      title,
+      avatar,
+      subName,
+      subEmail
     });
 
     return res.json({
