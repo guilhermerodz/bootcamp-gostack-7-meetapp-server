@@ -1,8 +1,5 @@
 import { Op } from 'sequelize';
-import { startOfHour, addHours, format } from 'date-fns';
-import pt from 'date-fns/locale/pt';
-
-import Mail from '../../lib/Mail';
+import { startOfHour, addHours } from 'date-fns';
 
 import Meetup from '../models/Meetup';
 import User from '../models/User';
