@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 import { startOfDay, endOfDay, parseISO } from 'date-fns';
 
-import { Op } from 'sequelize';
+import Sequelize, { Op } from 'sequelize';
 
 import Meetup from '../models/Meetup';
 import User from '../models/User';
@@ -20,6 +20,10 @@ class AvailableController {
       return res.status(400).json({ error: err.errors });
     }
 
+    const where = {
+      canceled_at: null
+    };
+
     /**
      * Set a default date
      */
@@ -27,14 +31,12 @@ class AvailableController {
     const { to: toDate } = req.query;
     const parsedDate = date ? parseISO(date) : new Date(); // Default is today
 
-    let dateFilter;
-
     if (toDate === 'all')
-      dateFilter = {
+      where.date = {
         [Op.gt]: parsedDate
       };
     else
-      dateFilter = {
+      where.date = {
         [Op.between]: [
           startOfDay(parsedDate),
           endOfDay(toDate ? parseISO(toDate) : parsedDate)
@@ -47,16 +49,19 @@ class AvailableController {
     const { ordering = 'ASC' } = req.query;
 
     /**
+     * Search Meetup by title
+     */
+    const { search } = req.query;
+    if (search) where.title = { [Op.iLike]: `%${search}%` };
+
+    /**
      * Pagination
      */
     const perPage = 10;
     const { page = 1 } = req.query;
 
     const meetups = await Meetup.findAll({
-      where: {
-        canceled_at: null,
-        date: dateFilter
-      },
+      where,
       order: [['date', ordering]],
       attributes: ['id', 'title', 'description', 'location', 'date'],
       limit: perPage,
