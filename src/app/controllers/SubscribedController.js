@@ -7,6 +7,7 @@ import File from '../models/File';
 
 import SubscriptionMail from '../jobs/SubscriptionMail';
 import Queue from '../../lib/Queue';
+import Notification from '../schemas/Notification';
 
 class SubscribedController {
   async index(req, res) {
@@ -108,10 +109,10 @@ class SubscribedController {
     if (meetup.past)
       return res.status(400).json({ error: 'Meetup is already finished' });
 
-    // if (req.userId === meetup.owner_id)
-    //   return res
-    //     .status(400)
-    //     .json({ error: "The meetup owner can't subscribe" });
+    if (req.userId === meetup.owner_id)
+      return res
+        .status(400)
+        .json({ error: "The meetup owner can't subscribe" });
 
     if (meetup.subscribers.includes(req.userId))
       return res.status(400).json({ error: 'Already subscribed' });
@@ -138,7 +139,14 @@ class SubscribedController {
         conflict: conflictMeetups
       });
 
-    const { title, description, location, date, banner } = await meetup.update({
+    const {
+      id,
+      title,
+      description,
+      location,
+      date,
+      banner
+    } = await meetup.update({
       subscribers: [req.userId, ...meetup.subscribers]
     });
 
@@ -160,6 +168,32 @@ class SubscribedController {
       avatar,
       subName,
       subEmail
+    });
+
+    const user = await User.findByPk(req.userId, {
+      include: [
+        {
+          model: File,
+          as: 'avatar',
+          attributes: ['id', 'path', 'url']
+        }
+      ]
+    });
+
+    await Notification.create({
+      user: meetup.owner_id,
+      content: `${user.name} signed up for your Meetup ${title}!`,
+      picture: user.avatar ? user.avatar.url : 'adorable',
+      redirects: `details/${id}`,
+      payload: {
+        adorable: user.name
+      }
+    });
+
+    await Notification.create({
+      user: user.id,
+      content: `You are now subscribed into ${title}!`,
+      redirects: `details/${id}`
     });
 
     return res.json({

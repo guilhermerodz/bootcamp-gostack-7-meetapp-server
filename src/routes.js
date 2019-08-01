@@ -8,6 +8,7 @@ import FileController from './app/controllers/FileController';
 import MeetupController from './app/controllers/MeetupController';
 import AvailableController from './app/controllers/AvailableController';
 import SubscribedController from './app/controllers/SubscribedController';
+import NotificationController from './app/controllers/NotificationController';
 
 import authMiddleware from './app/middlewares/auth';
 
@@ -37,5 +38,8 @@ routes.get('/subscribed', SubscribedController.index);
 routes.get('/subscribed/:id', SubscribedController.show);
 routes.post('/subscribed/:id', SubscribedController.store);
 routes.delete('/subscribed/:id', SubscribedController.delete);
+
+routes.get('/notifications', NotificationController.index);
+routes.put('/notifications/:id', NotificationController.update);
 
 export default routes;
