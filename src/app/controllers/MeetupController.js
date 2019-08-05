@@ -41,11 +41,15 @@ class MeetupController {
       banner
     } = meetup;
 
+    const subscribersAmount = 5;
+
     const subscribers = await User.findAll({
       where: {
-        [Op.or]: meetup.subscribers.slice(0, 5).map(user_id => ({
-          id: user_id
-        }))
+        [Op.or]: meetup.subscribers
+          .slice(0, subscribersAmount)
+          .map(user_id => ({
+            id: user_id
+          }))
       },
       attributes: ['id', 'name'],
       include: [
@@ -66,7 +70,8 @@ class MeetupController {
       past,
       cancelable,
       banner,
-      subscribers
+      subscribers,
+      restOfSubscribers: meetup.subscribers.length - subscribersAmount
     });
   }
 
