@@ -43,7 +43,7 @@ class MeetupController {
 
     const subscribers = await User.findAll({
       where: {
-        [Op.or]: meetup.subscribers.slice(0, 20).map(user_id => ({
+        [Op.or]: meetup.subscribers.slice(0, 5).map(user_id => ({
           id: user_id
         }))
       },
