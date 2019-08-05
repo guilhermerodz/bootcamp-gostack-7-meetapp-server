@@ -2,12 +2,14 @@ const date = new Date();
 
 const subscribers = [...Array(101).keys()].filter(n => n !== 0);
 
+const description =
+  'Lorem ipsum sit amet, consectetur adipiscing elit. Curabitur scelerisque rhoncus nibh, pellentesque efficitur urna gravida ac.\nCras id ipsum dolor. Nullam a lorem quis dui scelerisque fermentum nec a risus. Integer placerat id ligula id dignissim.\n';
+
 const data = [
   {
     id: 1,
     title: 'Sky Trip',
-    description:
-      'Restart your life from scratch. Come meet your real friends!\nWe have to meet on the floor first.',
+    description,
     location: 'Avenida Ipiranga, 1900 - República, São Paulo',
     date: '2030-08-01T18:00:00.000Z',
     owner_id: 1,
@@ -20,7 +22,7 @@ const data = [
   {
     id: 2,
     title: 'Green Land',
-    description: 'Come relax and be close to nature!',
+    description,
     location: 'Avenida Ipiranga, 1900 - República, São Paulo',
     date: '2030-08-01T18:00:00.000Z',
     owner_id: 89,
@@ -33,7 +35,7 @@ const data = [
   {
     id: 3,
     title: 'Intercept the Bridge',
-    description: 'Bridge traffic block day!',
+    description,
     location: 'Avenida Ipiranga, 1900 - República, São Paulo',
     date: '2030-08-01T18:00:00.000Z',
     owner_id: 23,
@@ -46,7 +48,7 @@ const data = [
   {
     id: 4,
     title: 'Climb the mountains',
-    description: 'Who will win?',
+    description,
     location: 'Avenida Ipiranga, 1900 - República, São Paulo',
     date: '2030-08-01T18:00:00.000Z',
     owner_id: 42,
@@ -59,7 +61,7 @@ const data = [
   {
     id: 5,
     title: 'Nature look',
-    description: 'Look at the sky tonight, all of the stars have a reason...',
+    description,
     location: 'Avenida Ipiranga, 1900 - República, São Paulo',
     date: '2030-08-01T18:00:00.000Z',
     owner_id: 57,
