@@ -7,6 +7,7 @@ import SessionController from './app/controllers/SessionController';
 import FileController from './app/controllers/FileController';
 import MeetupController from './app/controllers/MeetupController';
 import AvailableController from './app/controllers/AvailableController';
+import SubscriptionController from './app/controllers/SubscriptionController';
 import SubscribedController from './app/controllers/SubscribedController';
 import NotificationController from './app/controllers/NotificationController';
 
@@ -34,10 +35,12 @@ routes.delete('/meetups/:id', MeetupController.delete);
 
 routes.get('/available', AvailableController.index);
 
-routes.get('/subscribed', SubscribedController.index);
+routes.get('/subscriptions', SubscriptionController.index);
+routes.get('/subscriptions/:id', SubscriptionController.show);
+routes.post('/subscriptions/:id', SubscriptionController.store);
+routes.delete('/subscriptions/:id', SubscriptionController.delete);
+
 routes.get('/subscribed/:id', SubscribedController.show);
-routes.post('/subscribed/:id', SubscribedController.store);
-routes.delete('/subscribed/:id', SubscribedController.delete);
 
 routes.get('/notifications', NotificationController.index);
 routes.put('/notifications/:id', NotificationController.update);

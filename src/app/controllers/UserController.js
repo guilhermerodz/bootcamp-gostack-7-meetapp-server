@@ -1,5 +1,6 @@
 import User from '../models/User';
 import File from '../models/File';
+import Notification from '../schemas/Notification';
 
 import { storeSchema, updateSchema } from '../validations/User';
 
@@ -19,6 +20,12 @@ class UserController {
         .json({ error: 'This e-mail is already registered!' });
 
     const { id, name, email } = await User.create(req.body);
+
+    await Notification.create({
+      user: id,
+      content: `Welcome to Meetapp!`,
+      redirects: `/tutorial`
+    });
 
     return res.json({
       id,

@@ -9,7 +9,16 @@ import { storeSchema, updateSchema } from '../validations/Meetup';
 
 class MeetupController {
   async index(req, res) {
-    const meetups = await Meetup.findAll({ where: { owner_id: req.userId } });
+    const meetups = await Meetup.findAll({
+      where: { owner_id: req.userId },
+      include: [
+        {
+          model: File,
+          as: 'banner',
+          attributes: ['id', 'path', 'url']
+        }
+      ]
+    });
 
     return res.json(meetups);
   }
@@ -19,6 +28,18 @@ class MeetupController {
 
     const meetup = await Meetup.findByPk(id, {
       include: [
+        {
+          model: User,
+          as: 'owner',
+          attributes: ['id', 'name'],
+          include: [
+            {
+              model: File,
+              as: 'avatar',
+              attributes: ['id', 'path', 'url']
+            }
+          ]
+        },
         {
           model: File,
           as: 'banner',
@@ -35,7 +56,7 @@ class MeetupController {
       description,
       location,
       date,
-      owner_id,
+      owner,
       past,
       cancelable,
       banner
@@ -61,17 +82,22 @@ class MeetupController {
       ]
     });
 
+    const subscribed = !!meetup.subscribers.find(
+      user_id => user_id === req.userId
+    );
+
     return res.json({
       title,
       description,
       location,
       date,
-      owner_id,
+      owner,
       past,
       cancelable,
       banner,
       subscribers,
-      restOfSubscribers: meetup.subscribers.length - subscribersAmount
+      restOfSubscribers: meetup.subscribers.length - subscribersAmount,
+      subscribed
     });
   }
 
