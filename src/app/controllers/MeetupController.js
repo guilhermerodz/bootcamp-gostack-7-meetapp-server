@@ -4,6 +4,7 @@ import { isBefore, parseISO } from 'date-fns';
 import Meetup from '../models/Meetup';
 import User from '../models/User';
 import File from '../models/File';
+import Notification from '../schemas/Notification';
 
 import { storeSchema, updateSchema } from '../validations/Meetup';
 
@@ -59,6 +60,7 @@ class MeetupController {
       owner,
       past,
       cancelable,
+      canceled_at,
       banner
     } = meetup;
 
@@ -94,6 +96,7 @@ class MeetupController {
       owner,
       past,
       cancelable,
+      canceled_at,
       banner,
       subscribers,
       restOfSubscribers: meetup.subscribers.length - subscribersAmount,
@@ -212,6 +215,11 @@ class MeetupController {
     if (!meetup)
       return res.status(400).json({ error: 'This meetup does not exists!' });
 
+    if (meetup.canceled_at)
+      return res
+        .status(400)
+        .json({ error: 'This meetup was already canceled!', meetup });
+
     if (meetup.past)
       return res
         .status(400)
@@ -222,7 +230,19 @@ class MeetupController {
         .status(400)
         .json({ error: 'You are not the owner of this meetup!' });
 
-    await meetup.destroy();
+    meetup.canceled_at = new Date();
+
+    await Notification.create(
+      meetup.subscribers.map(subscriber => ({
+        user: subscriber,
+        content: `${meetup.title} was canceled!`,
+        redirects: `/details/${meetup.id}`
+      }))
+    );
+
+    meetup.subscribers = [];
+
+    await meetup.save();
 
     return res.send();
   }
