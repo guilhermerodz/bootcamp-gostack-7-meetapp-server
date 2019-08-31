@@ -1,8 +1,10 @@
+import jwt from 'jsonwebtoken';
+
 import User from '../models/User';
 import File from '../models/File';
-import Notification from '../schemas/Notification';
 
 import { storeSchema, updateSchema } from '../validations/User';
+import authConfig from '../../config/auth';
 
 class UserController {
   async store(req, res) {
@@ -19,18 +21,18 @@ class UserController {
         .status(400)
         .json({ error: 'This e-mail is already registered!' });
 
-    const { id, name, email } = await User.create(req.body);
-
-    await Notification.create({
-      user: id,
-      content: `Welcome to Meetapp!`,
-      redirects: `/tutorial`
-    });
+    const { id, name, email, avatar } = await User.create(req.body);
 
     return res.json({
-      id,
-      name,
-      email
+      user: {
+        id,
+        name,
+        email,
+        avatar
+      },
+      token: jwt.sign({ id }, authConfig.secret, {
+        expiresIn: authConfig.expiresIn
+      })
     });
   }
 
