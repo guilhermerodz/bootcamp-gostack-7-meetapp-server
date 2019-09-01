@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 import { startOfDay, endOfDay, parseISO } from 'date-fns';
 
-import Sequelize, { Op } from 'sequelize';
+import { Op } from 'sequelize';
 
 import Meetup from '../models/Meetup';
 import User from '../models/User';
@@ -62,7 +62,7 @@ class AvailableController {
 
     const meetups = await Meetup.findAll({
       where,
-      order: [['date', ordering]],
+      order: [['date', ordering], ['id', 'DESC']],
       attributes: ['id', 'title', 'description', 'location', 'date'],
       limit: perPage,
       offset: (page - 1) * perPage,
