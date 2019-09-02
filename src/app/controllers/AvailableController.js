@@ -102,10 +102,15 @@ class AvailableController {
     });
 
     return res.json(
-      meetups.map(meetup => ({
-        ...meetup.dataValues,
-        subscribed: meetup.dataValues.subscribers.includes(req.userId)
-      }))
+      meetups.map(meetup => {
+        const subs = meetup.dataValues.subscribers;
+        delete meetup.dataValues.subscribers;
+
+        return {
+          ...meetup.dataValues,
+          subscribed: subs.includes(req.userId)
+        };
+      })
     );
   }
 }
