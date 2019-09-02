@@ -70,7 +70,14 @@ class AvailableController {
         owner_id: { [Op.ne]: req.userId }
       },
       order: [['date', ordering], ['id', 'DESC']],
-      attributes: ['id', 'title', 'description', 'location', 'date'],
+      attributes: [
+        'id',
+        'title',
+        'description',
+        'location',
+        'date',
+        'subscribers'
+      ],
       limit: perPage,
       offset: (page - 1) * perPage,
       include: [
@@ -94,7 +101,12 @@ class AvailableController {
       ]
     });
 
-    return res.json(meetups);
+    return res.json(
+      meetups.map(meetup => ({
+        ...meetup.dataValues,
+        subscribed: meetup.dataValues.subscribers.includes(req.userId)
+      }))
+    );
   }
 }
 
