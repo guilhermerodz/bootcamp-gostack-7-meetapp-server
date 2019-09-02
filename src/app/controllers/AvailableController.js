@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { startOfDay, endOfDay, parseISO } from 'date-fns';
+import { startOfDay, endOfDay, parseISO, isSameDay } from 'date-fns';
 
 import { Op } from 'sequelize';
 
@@ -27,9 +27,13 @@ class AvailableController {
     /**
      * Set a default date
      */
+    const now = new Date();
+
     const { date } = req.query;
     const { to: toDate } = req.query;
-    const parsedDate = date ? parseISO(date) : new Date(); // Default is today
+
+    let parsedDate = date ? parseISO(date) : now; // Default is today
+    parsedDate = isSameDay(now, parsedDate) ? now : startOfDay(parsedDate);
 
     if (toDate === 'all')
       where.date = {
@@ -38,7 +42,7 @@ class AvailableController {
     else
       where.date = {
         [Op.between]: [
-          startOfDay(parsedDate),
+          parsedDate,
           endOfDay(toDate ? parseISO(toDate) : parsedDate)
         ]
       };
@@ -61,7 +65,10 @@ class AvailableController {
     const { page = 1 } = req.query;
 
     const meetups = await Meetup.findAll({
-      where,
+      where: {
+        ...where,
+        owner_id: { [Op.ne]: req.userId }
+      },
       order: [['date', ordering], ['id', 'DESC']],
       attributes: ['id', 'title', 'description', 'location', 'date'],
       limit: perPage,
